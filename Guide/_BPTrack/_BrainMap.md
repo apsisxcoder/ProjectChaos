@@ -64,9 +64,14 @@ Stagger = AZALAN SÜRE sayacı (bool değil).
 EV: AChaosGameState → UChaosChainComponent (beyin, server-only).
     (WorldSubsystem DEĞİL: replike olmaz. GameState doğru ev — araştırma teyitli.)
 
-Server_LaunchSelf   → Chain.OnSkillUsed(PS)        → YENİ ChainID, owner sersem üye  ✅5.1
-OnCapsuleHit aktarım → (5.2) Chain.OnImpact(...)    → zinciri yay + link + eskalasyon  ⬜
-RecoverFromStagger  → Chain.OnStaggerRecovered(PS) → zincirden çıkar, boşsa KAPAT      ✅5.1
+TAG EVENT OMURGASI (GameplayMessageSubsystem, Lyra plugin taşındı — bkz. 05_BPTrack):
+  ChaosCharacter → BroadcastMessage(Event.Skill.Used / Event.Penalty.Recovered, FChaosEventMessage)
+  ChainComponent → RegisterListener(...) → OnSkillUsed / OnStaggerRecovered
+  (doğrudan çağrı YOK; ability↔chaos decoupled. 5.2 impact de buradan.)
+
+Server_LaunchSelf   → Event.Skill.Used        → YENİ ChainID, owner sersem üye   ✅5.1
+OnCapsuleHit aktarım → (5.2) Event.Impact.*     → zinciri yay + link + eskalasyon  ⬜
+RecoverFromStagger  → Event.Penalty.Recovered  → zincirden çıkar, boşsa KAPAT      ✅5.1
 
 5.1 = iskelet + aç/kapat + log (puan yok). 5.2 impact, 5.3 puan, 5.4 popup.
 ```

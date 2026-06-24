@@ -4,9 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "GameFramework/GameplayMessageSubsystem.h"
 #include "ChaosChainComponent.generated.h"
 
 class APlayerState;
+struct FChaosEventMessage;
 
 /**
  * Bir kaos zinciri (combo). 5.1'de minimal: sadece sahip + aktif sersemler.
@@ -39,14 +41,25 @@ class PROJECTCHAOS_API UChaosChainComponent : public UActorComponent
 public:
 	UChaosChainComponent();
 
-	/** SERVER: bir oyuncu skill kullandı → YENİ ChainID aç, owner'ı sersem üye yap. */
-	void OnSkillUsed(APlayerState* Player);
-
-	/** SERVER: bir oyuncu ayıldı → ait olduğu zincirden çıkar, zincir boşaldıysa kapat. */
-	void OnStaggerRecovered(APlayerState* Player);
+	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 private:
 	bool HasServerAuthority() const;
+
+	//~ Tag omurgası dinleyicileri (GameplayMessageSubsystem) -------------------
+	void HandleSkillUsed(FGameplayTag Channel, const FChaosEventMessage& Message);
+	void HandleStaggerRecovered(FGameplayTag Channel, const FChaosEventMessage& Message);
+
+	FGameplayMessageListenerHandle SkillUsedListener;
+	FGameplayMessageListenerHandle RecoveredListener;
+
+	//~ Çekirdek zincir mantığı ------------------------------------------------
+	/** YENİ ChainID aç, owner'ı sersem üye yap. */
+	void OnSkillUsed(APlayerState* Player);
+
+	/** Oyuncu ayıldı → ait olduğu zincirden çıkar, zincir boşaldıysa kapat. */
+	void OnStaggerRecovered(APlayerState* Player);
 
 	/** Oyuncuyu mevcut zincirinden çıkar (varsa), o zincir boşaldıysa kapat. */
 	void RemovePlayerFromCurrentChain(APlayerState* Player);

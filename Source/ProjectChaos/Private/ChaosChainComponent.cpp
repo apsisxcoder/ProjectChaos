@@ -2,6 +2,9 @@
 
 #include "ChaosChainComponent.h"
 
+#include "ChaosEventMessage.h"
+#include "ChaosGameplayTags.h"
+#include "GameFramework/GameplayMessageSubsystem.h"
 #include "GameFramework/PlayerState.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogChaosChain, Log, All);
@@ -10,6 +13,38 @@ UChaosChainComponent::UChaosChainComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false; // olay bazlı, tick yok
 	SetIsReplicatedByDefault(false);           // 5.1: saf server mantığı, henüz replike yok
+}
+
+void UChaosChainComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	// Sadece server dinler (chaos mantığı server-authoritative).
+	if (!HasServerAuthority())
+	{
+		return;
+	}
+
+	UGameplayMessageSubsystem& Bus = UGameplayMessageSubsystem::Get(this);
+	SkillUsedListener = Bus.RegisterListener(TAG_Event_Skill_Used, this, &UChaosChainComponent::HandleSkillUsed);
+	RecoveredListener = Bus.RegisterListener(TAG_Event_Penalty_Recovered, this, &UChaosChainComponent::HandleStaggerRecovered);
+}
+
+void UChaosChainComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	SkillUsedListener.Unregister();
+	RecoveredListener.Unregister();
+	Super::EndPlay(EndPlayReason);
+}
+
+void UChaosChainComponent::HandleSkillUsed(FGameplayTag Channel, const FChaosEventMessage& Message)
+{
+	OnSkillUsed(Message.Instigator);
+}
+
+void UChaosChainComponent::HandleStaggerRecovered(FGameplayTag Channel, const FChaosEventMessage& Message)
+{
+	OnStaggerRecovered(Message.Instigator);
 }
 
 bool UChaosChainComponent::HasServerAuthority() const

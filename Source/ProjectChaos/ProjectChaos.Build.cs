@@ -8,7 +8,7 @@ public class ProjectChaos : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "GameplayTags", "GameplayMessageRuntime" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] { "PhysicsCore" });
 
