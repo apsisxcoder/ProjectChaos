@@ -1,7 +1,7 @@
 @echo off
 setlocal
 
-set UPROJECT="C:\Users\Apsisx\Documents\Unreal Projects\ProjectChaos\ProjectChaos.uproject"
+set UPROJECT="C:\Users\Apsisx\Documents\Github\ProjectChaos\ProjectChaos.uproject"
 set UE_ROOT=C:\Program Files\Epic Games\UE_5.7
 
 echo ============================================

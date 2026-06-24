@@ -69,14 +69,33 @@ void AChaosCharacter::SetStaggeredInternal(bool bNewStaggered)
 		return;
 	}
 
-	bStaggered = bNewStaggered;
-	OnRep_Staggered(); // listen host kendi penceresinde de görsün
-
-	GetWorldTimerManager().ClearTimer(StaggerTimerHandle);
 	if (bNewStaggered)
 	{
+		// BİRİKİM (§2.5): yeni süre = kalan + StaggerDuration. Ne kadar çok yerse o kadar
+		// uzun sersem kalır; süre timer ile delta-time azalır (per-frame tick yok).
+		float Remaining = bStaggered
+			? GetWorldTimerManager().GetTimerRemaining(StaggerTimerHandle) : 0.f;
+		if (Remaining < 0.f)
+		{
+			Remaining = 0.f;
+		}
+
+		const bool bWasStaggered = bStaggered;
+		bStaggered = true;
+		// Görseli yalnız ilk girişte tetikle; birikimde (true→true) ragdoll'u yeniden açma.
+		if (!bWasStaggered)
+		{
+			OnRep_Staggered(); // listen host kendi penceresinde de görsün
+		}
+
 		GetWorldTimerManager().SetTimer(StaggerTimerHandle, this,
-			&AChaosCharacter::RecoverFromStagger, StaggerDuration, false);
+			&AChaosCharacter::RecoverFromStagger, Remaining + StaggerDuration, false);
+	}
+	else
+	{
+		bStaggered = false;
+		OnRep_Staggered();
+		GetWorldTimerManager().ClearTimer(StaggerTimerHandle);
 	}
 }
 
