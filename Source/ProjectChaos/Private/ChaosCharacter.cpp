@@ -2,9 +2,29 @@
 
 #include "ChaosCharacter.h"
 
+#include "ChaosChainComponent.h"
+#include "ChaosGameState.h"
 #include "Components/CapsuleComponent.h"
+#include "Engine/World.h"
+#include "GameFramework/PlayerState.h"
 #include "Net/UnrealNetwork.h"
 #include "TimerManager.h"
+
+namespace
+{
+	// ChainID beynine (GameState üstündeki component) erişim.
+	UChaosChainComponent* GetChainComponent(const AActor* From)
+	{
+		if (const UWorld* World = From ? From->GetWorld() : nullptr)
+		{
+			if (AChaosGameState* GS = World->GetGameState<AChaosGameState>())
+			{
+				return GS->GetChainComponent();
+			}
+		}
+		return nullptr;
+	}
+}
 
 AChaosCharacter::AChaosCharacter()
 {
@@ -29,6 +49,12 @@ void AChaosCharacter::Server_LaunchSelf_Implementation(FVector Direction, float 
 	const FVector Dir = Direction.GetSafeNormal();
 	const FVector Velocity = (Dir * Force) + (FVector::UpVector * Force * UpStrengthRatio);
 	DoLaunch(Velocity);
+
+	// Skill = yeni ChainID başlatıcı (doküman 06 §2 kural 1). Aktarım/impact DEĞİL.
+	if (UChaosChainComponent* Chain = GetChainComponent(this))
+	{
+		Chain->OnSkillUsed(GetPlayerState());
+	}
 }
 
 void AChaosCharacter::Server_ApplyKnockback_Implementation(AChaosCharacter* Target, float Force)
@@ -102,6 +128,12 @@ void AChaosCharacter::SetStaggeredInternal(bool bNewStaggered)
 void AChaosCharacter::RecoverFromStagger()
 {
 	SetStaggeredInternal(false);
+
+	// Zincir yaşam döngüsü: bu oyuncu ayıldı → zincirinden çıkar (boşsa kapanır).
+	if (UChaosChainComponent* Chain = GetChainComponent(this))
+	{
+		Chain->OnStaggerRecovered(GetPlayerState());
+	}
 }
 
 void AChaosCharacter::OnCapsuleHit(UPrimitiveComponent* HitComp, AActor* OtherActor,

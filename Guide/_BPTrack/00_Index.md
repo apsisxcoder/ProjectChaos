@@ -16,6 +16,7 @@
 | 01 | [01_Player_Reparent_ve_Input.md](01_Player_Reparent_ve_Input.md) | BP_ThirdPersonCharacter → AChaosCharacter reparent + IA_Launch input bağlama | ✅ kuruldu |
 | 02 | [02_Ragdoll_Gorseli.md](02_Ragdoll_Gorseli.md) | OnStaggerChanged event'inde kısmi ragdoll blend (spine_01) | ✅ kuruldu |
 | 03 | [03_Collision_Ayarlari.md](03_Collision_Ayarlari.md) | Mesh ve Capsule collision preset/response ayarları | ✅ mesh + capsule |
+| 04 | [04_GameState_Kurulumu.md](04_GameState_Kurulumu.md) | BP GameMode → GameState Class = AChaosGameState | 🔶 BP'de set edilecek |
 | — | [_BrainMap.md](_BrainMap.md) | Claude'un sistem zihin haritası (C++ ↔ BP ↔ tasarım) | canlı |
 | — | [_TODO.md](_TODO.md) | Gelecekteki iyileştirmeler / ertelenen işler (movement kapama, tuning, recovery yumuşatma) | canlı |
 

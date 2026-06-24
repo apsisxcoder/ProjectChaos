@@ -59,13 +59,16 @@ Stagger = AZALAN SÜRE sayacı (bool değil).
 - StaggerDuration BP'den ayarlanır (şimdilik ~3 sn fikri)
 ```
 
-## 4. ChainID'ye köprü (06_Chaos_Scoring — sonraki büyük adım)
+## 4. ChainID (06_Chaos_Scoring) — KURULUYOR
 ```
-Skill kullanımı      → YENİ ChainID (Owner = skill sahibi)
-İstemsiz çarpışma    → mevcut ChainID'yi yayar (kurbana bulaştırır)  ← bizim OnCapsuleHit aktarımı
-Zincir kapanır       → kendi sersemleri kalmayınca → puan Owner'a
-Şu an: fiziksel temel kuruluyor (launch + ragdoll + aktarım).
-Sonra: ChaosSubsystem (GameState, server) bu olayları zincire bağlar + puan.
+EV: AChaosGameState → UChaosChainComponent (beyin, server-only).
+    (WorldSubsystem DEĞİL: replike olmaz. GameState doğru ev — araştırma teyitli.)
+
+Server_LaunchSelf   → Chain.OnSkillUsed(PS)        → YENİ ChainID, owner sersem üye  ✅5.1
+OnCapsuleHit aktarım → (5.2) Chain.OnImpact(...)    → zinciri yay + link + eskalasyon  ⬜
+RecoverFromStagger  → Chain.OnStaggerRecovered(PS) → zincirden çıkar, boşsa KAPAT      ✅5.1
+
+5.1 = iskelet + aç/kapat + log (puan yok). 5.2 impact, 5.3 puan, 5.4 popup.
 ```
 
 ## 5. PHASE 0 DURUM
