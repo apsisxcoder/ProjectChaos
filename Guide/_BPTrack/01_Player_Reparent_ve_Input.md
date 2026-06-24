@@ -1,12 +1,12 @@
 # 01 — Player Reparent ve Input Bağlama
 
-> Konu: `BP_ThirdPersonCharacter`'ı C++ `AChaosCharacter`'a bağlamak ve launch input'unu kurmak.
+> Konu: `BP_ChaosCharacter`'ı C++ `AChaosCharacter`'a bağlamak ve launch input'unu kurmak.
 > Kod karşılığı: `AChaosCharacter::Server_LaunchSelf` (BlueprintCallable, Server RPC).
 
 ---
 
 ## 1. Reparent
-- **BP:** `Content/ThirdPerson/Blueprints/BP_ThirdPersonCharacter`
+- **BP:** `Content/Blueprints/BP_ChaosCharacter`
 - **Parent Class:** `AChaosCharacter` (C++) olarak değiştirildi.
 - Sonuç: template'in tüm hareket/kamera/input'u korunur, üstüne Chaos primitive'leri gelir.
 

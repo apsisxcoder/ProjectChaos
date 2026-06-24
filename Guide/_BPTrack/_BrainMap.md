@@ -33,7 +33,7 @@ Backend = C++ BlueprintCallable primitive + state. Görsel/akış/tuning = BP (r
                 └───────────────┬─────────────────────┘
                                 │ BlueprintImplementableEvent / Callable
                 ┌───────────────▼─────────────────────┐
-                │  BP_ThirdPersonCharacter (GÖRSEL/AKIŞ)│
+                │  BP_ChaosCharacter (GÖRSEL/AKIŞ)      │
                 │  - IA_Launch → Server_LaunchSelf      │
                 │  - OnStaggerChanged → ragdoll blend   │
                 │  - Collision presetleri (mesh/capsule)│

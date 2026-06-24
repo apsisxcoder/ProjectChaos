@@ -13,7 +13,7 @@
 
 | # | Dosya | Konu | Durum |
 |---|-------|------|-------|
-| 01 | [01_Player_Reparent_ve_Input.md](01_Player_Reparent_ve_Input.md) | BP_ThirdPersonCharacter → AChaosCharacter reparent + IA_Launch input bağlama | ✅ kuruldu |
+| 01 | [01_Player_Reparent_ve_Input.md](01_Player_Reparent_ve_Input.md) | BP_ChaosCharacter → AChaosCharacter reparent + IA_Launch input bağlama | ✅ kuruldu |
 | 02 | [02_Ragdoll_Gorseli.md](02_Ragdoll_Gorseli.md) | OnStaggerChanged event'inde kısmi ragdoll blend (spine_01) | ✅ kuruldu |
 | 03 | [03_Collision_Ayarlari.md](03_Collision_Ayarlari.md) | Mesh ve Capsule collision preset/response ayarları | ✅ mesh + capsule |
 | 04 | [04_GameState_Kurulumu.md](04_GameState_Kurulumu.md) | BP GameMode → GameState Class = AChaosGameState | 🔶 BP'de set edilecek |

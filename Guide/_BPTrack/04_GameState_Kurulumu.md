@@ -7,7 +7,7 @@
 ---
 
 ## BP'de yapılacak (tek seferlik)
-1. `Content/ThirdPerson/Blueprints/BP_ThirdPersonGameMode` aç.
+1. `Content/Blueprints/BP_ChaosGameMode` aç.
 2. **Class Defaults → Classes → GameState Class = `AChaosGameState`** (veya ondan türetilmiş BP).
 3. Kaydet.
 
