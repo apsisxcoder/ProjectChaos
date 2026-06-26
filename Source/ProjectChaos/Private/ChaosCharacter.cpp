@@ -144,6 +144,13 @@ void AChaosCharacter::OnCapsuleHit(UPrimitiveComponent* HitComp, AActor* OtherAc
 	const FVector Dir = (Other->GetActorLocation() - GetActorLocation()).GetSafeNormal();
 	const FVector Velocity = (Dir * TransferForce) + (FVector::UpVector * TransferForce * UpStrengthRatio);
 	Other->DoLaunch(Velocity);
+
+	// İstemsiz çarpışma = zinciri yay (06 §2 kural 2). Tag omurgasına yayınla;
+	// ChaosSubsystem kurbanı bizim zincirimize ekler (re-tag + LinkCount).
+	FChaosEventMessage Msg;
+	Msg.Instigator = GetPlayerState();
+	Msg.Target = Other->GetPlayerState();
+	UGameplayMessageSubsystem::Get(this).BroadcastMessage(TAG_Event_Impact_PlayerHit, Msg);
 }
 
 void AChaosCharacter::OnRep_Staggered()

@@ -10,9 +10,19 @@
 class APlayerState;
 struct FChaosEventMessage;
 
+/** Zincirdeki tek bir halka: kim kime çarptı (06 §2 veri yapısı). */
+USTRUCT()
+struct FChainLink
+{
+	GENERATED_BODY()
+
+	TObjectPtr<APlayerState> Instigator = nullptr; // bu halkayı üreten
+	TObjectPtr<APlayerState> Victim = nullptr;     // çarpılan
+	float Timestamp = 0.f;
+};
+
 /**
- * Bir kaos zinciri (combo). 5.1'de minimal: sadece sahip + aktif sersemler.
- * Link/puan/eskalasyon 5.2-5.3'te eklenir.
+ * Bir kaos zinciri (combo). 5.2: link + LinkCount eklendi. Puan/tier 5.3'te.
  */
 USTRUCT()
 struct FChaosChain
@@ -22,6 +32,8 @@ struct FChaosChain
 	int32 ChainID = 0;
 	TObjectPtr<APlayerState> Owner = nullptr;   // zinciri açan (skill sahibi)
 	TSet<TObjectPtr<APlayerState>> ActiveStaggered; // bu zincire ait HÂLÂ sersem olanlar
+	TArray<FChainLink> Links;                   // üretilen halkalar
+	int32 LinkCount = 0;                         // player-hit sayısı (eskalasyon, 5.3)
 	float StartTime = 0.f;
 };
 
@@ -50,9 +62,11 @@ private:
 	//~ Tag omurgası dinleyicileri (GameplayMessageSubsystem) -------------------
 	void HandleSkillUsed(FGameplayTag Channel, const FChaosEventMessage& Message);
 	void HandleStaggerRecovered(FGameplayTag Channel, const FChaosEventMessage& Message);
+	void HandleImpact(FGameplayTag Channel, const FChaosEventMessage& Message);
 
 	FGameplayMessageListenerHandle SkillUsedListener;
 	FGameplayMessageListenerHandle RecoveredListener;
+	FGameplayMessageListenerHandle ImpactListener;
 
 	//~ Çekirdek zincir mantığı ------------------------------------------------
 	/** YENİ ChainID aç, owner'ı sersem üye yap. */
@@ -60,6 +74,9 @@ private:
 
 	/** Oyuncu ayıldı → ait olduğu zincirden çıkar, zincir boşaldıysa kapat. */
 	void OnStaggerRecovered(APlayerState* Player);
+
+	/** Sersem Instigator taze Victim'e çarptı → Victim'i Instigator'ın zincirine ekle (yay). */
+	void OnImpact(APlayerState* Instigator, APlayerState* Victim);
 
 	/** Oyuncuyu mevcut zincirinden çıkar (varsa), o zincir boşaldıysa kapat. */
 	void RemovePlayerFromCurrentChain(APlayerState* Player);

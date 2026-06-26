@@ -28,12 +28,14 @@ void UChaosChainComponent::BeginPlay()
 	UGameplayMessageSubsystem& Bus = UGameplayMessageSubsystem::Get(this);
 	SkillUsedListener = Bus.RegisterListener(TAG_Event_Skill_Used, this, &UChaosChainComponent::HandleSkillUsed);
 	RecoveredListener = Bus.RegisterListener(TAG_Event_Penalty_Recovered, this, &UChaosChainComponent::HandleStaggerRecovered);
+	ImpactListener = Bus.RegisterListener(TAG_Event_Impact_PlayerHit, this, &UChaosChainComponent::HandleImpact);
 }
 
 void UChaosChainComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	SkillUsedListener.Unregister();
 	RecoveredListener.Unregister();
+	ImpactListener.Unregister();
 	Super::EndPlay(EndPlayReason);
 }
 
@@ -45,6 +47,11 @@ void UChaosChainComponent::HandleSkillUsed(FGameplayTag Channel, const FChaosEve
 void UChaosChainComponent::HandleStaggerRecovered(FGameplayTag Channel, const FChaosEventMessage& Message)
 {
 	OnStaggerRecovered(Message.Instigator);
+}
+
+void UChaosChainComponent::HandleImpact(FGameplayTag Channel, const FChaosEventMessage& Message)
+{
+	OnImpact(Message.Instigator, Message.Target);
 }
 
 bool UChaosChainComponent::HasServerAuthority() const
@@ -76,6 +83,51 @@ void UChaosChainComponent::OnSkillUsed(APlayerState* Player)
 
 	UE_LOG(LogChaosChain, Log, TEXT("[CHAIN] AÇILDI  ID=%d  Owner=%s  (aktif zincir: %d)"),
 		NewID, *Player->GetPlayerName(), ActiveChains.Num());
+}
+
+void UChaosChainComponent::OnImpact(APlayerState* Instigator, APlayerState* Victim)
+{
+	if (!HasServerAuthority() || !Instigator || !Victim || Instigator == Victim)
+	{
+		return;
+	}
+
+	// Instigator hangi zincirde? (ChainID'yi DEĞERLE kopyala — sonra map'leri
+	// değiştireceğiz, pointer dangling olmasın.)
+	const int32* FoundChainID = PlayerCurrentChain.Find(Instigator);
+	if (!FoundChainID)
+	{
+		// Sersem ama zincirsiz instigator (beklenmez). Orphan — şimdilik atla.
+		UE_LOG(LogChaosChain, Warning, TEXT("[CHAIN] impact atlandı: %s zincirsiz"),
+			*Instigator->GetPlayerName());
+		return;
+	}
+	const int32 ChainID = *FoundChainID;
+
+	// Re-tag: Victim başka bir zincirdeyse oradan çıkar (06 §2 kural 3). Bu, map'leri
+	// değiştirebilir/zincir kapatabilir — bu yüzden Chain'i BUNDAN SONRA bul.
+	RemovePlayerFromCurrentChain(Victim);
+
+	FChaosChain* Chain = ActiveChains.Find(ChainID);
+	if (!Chain)
+	{
+		return; // teorik: instigator'ın zinciri arada kapanmış
+	}
+
+	// Victim'i Instigator'ın zincirine ekle → zincir yayıldı.
+	Chain->ActiveStaggered.Add(Victim);
+	PlayerCurrentChain.Add(Victim, ChainID);
+	Chain->LinkCount++;
+
+	FChainLink Link;
+	Link.Instigator = Instigator;
+	Link.Victim = Victim;
+	Link.Timestamp = GetWorld() ? GetWorld()->GetTimeSeconds() : 0.f;
+	Chain->Links.Add(Link);
+
+	UE_LOG(LogChaosChain, Log, TEXT("[CHAIN] LINK   ID=%d  %s -> %s  LinkCount=%d  (sersem: %d)"),
+		ChainID, *Instigator->GetPlayerName(), *Victim->GetPlayerName(),
+		Chain->LinkCount, Chain->ActiveStaggered.Num());
 }
 
 void UChaosChainComponent::OnStaggerRecovered(APlayerState* Player)

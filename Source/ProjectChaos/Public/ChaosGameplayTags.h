@@ -5,5 +5,6 @@
 #include "NativeGameplayTags.h"
 
 // Chaos olay kanalları. Component'ler bunlara yayın yapar; ChaosSubsystem dinler.
-UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Event_Skill_Used);       // skill kullanıldı → yeni ChainID
+UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Event_Skill_Used);        // skill kullanıldı → yeni ChainID
 UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Event_Penalty_Recovered); // oyuncu ayıldı → zincirden çık
+UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Event_Impact_PlayerHit);  // sersem beden taze kurbana çarptı → zinciri yay

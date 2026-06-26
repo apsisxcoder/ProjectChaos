@@ -17,7 +17,9 @@
        → ✅ log testi geçti: aç→çık→kapat temiz, ID'ler artıyor, leak yok. (2026-06-25)
 - [x] **5.1b** Tag event omurgası (GameplayMessageRouter taşındı) → component'ler broadcast, ChainComp dinler.
        → ✅ davranış aynı + eşzamanlı 2 zincir (aktif zincir: 2) kanıtlandı. bkz. [05_Tag_Event_Omurgasi.md](05_Tag_Event_Omurgasi.md)
-- [ ] **5.2** Impact linkleme + eskalasyon + victim re-tag
+- [x] **5.2** Impact linkleme + victim re-tag (Event.Impact.PlayerHit → OnImpact, LinkCount++)
+       → ✅ kanıtlandı: relay (A→B→C aynı ID), bowling (A→B, A→C), re-tag (skill ile zincir değiştirme),
+         eşzamanlı zincirler. LinkCount doğru artıyor. (2026-06-25)
 - [ ] **5.3** Scoring (puan + tier + hero çarpanı) + PlayerScore replicate
 - [ ] **5.4** Combo cue / popup (BP görsel: "COMBO! / MEGA CHAOS")
 
