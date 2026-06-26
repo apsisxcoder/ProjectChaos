@@ -13,6 +13,12 @@
       blend weight (0.75) değerleri playtest ile kalibre edilecek. Hepsi BP'den ayarlı.
 - [ ] **Recovery yumuşatma** — ragdoll blend 1→0 geçişini Timeline ile yumuşat
       (şu an sert/anında). bkz. [02_Ragdoll_Gorseli.md](02_Ragdoll_Gorseli.md)
+- [ ] **Yön-temelli / impact-point ragdoll** (önemli — şu an sabit spine_01 placeholder):
+      Ragdoll, vurulan KEMİKTEN başlamalı ve darbe YÖNÜNDE savrulmalı (karna darbe = C-şekli,
+      kafaya darbe = rotaya göre öne/arkaya). Teknik: SetAllBodiesBelowSimulatePhysics(HitBone)
+      + AddImpulseAtLocation(darbe yönü) + PhysicalAnimationComponent blend. Bağımlılık: impact
+      şu an kapsül seviyesinde → hit-bone + yön yakalamak gerek. Ragdoll cilası + Best Moments
+      slow-mo (06 §7.5) ile birlikte yapılır. "Ağır çekimde sol/sağ yanak" komedisi buradan.
 - [ ] **Launch yöntemi** — client'ta rubber-band görülürse LaunchCharacter yerine
       RootMotionSource (FRootMotionSource_ConstantForce). Şimdilik gerek yok (sync ✓).
 

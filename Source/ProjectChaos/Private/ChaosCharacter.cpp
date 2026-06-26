@@ -2,6 +2,7 @@
 
 #include "ChaosCharacter.h"
 
+#include "ChaosCharacterTuning.h"
 #include "ChaosEventMessage.h"
 #include "ChaosGameplayTags.h"
 #include "Components/CapsuleComponent.h"
@@ -9,6 +10,11 @@
 #include "GameFramework/PlayerState.h"
 #include "Net/UnrealNetwork.h"
 #include "TimerManager.h"
+
+// Fallback'li tuning okuyucular: Tuning atanmamışsa standart varsayılan.
+float AChaosCharacter::GetUpStrengthRatio() const { return Tuning ? Tuning->UpStrengthRatio : 0.5f; }
+float AChaosCharacter::GetTransferForce() const   { return Tuning ? Tuning->TransferForce   : 1000.f; }
+float AChaosCharacter::GetStaggerDuration() const { return Tuning ? Tuning->StaggerDuration : 1.8f; }
 
 AChaosCharacter::AChaosCharacter()
 {
@@ -31,7 +37,7 @@ void AChaosCharacter::Server_LaunchSelf_Implementation(FVector Direction, float 
 {
 	// SERVER. Verilen yön + yukarı bileşen.
 	const FVector Dir = Direction.GetSafeNormal();
-	const FVector Velocity = (Dir * Force) + (FVector::UpVector * Force * UpStrengthRatio);
+	const FVector Velocity = (Dir * Force) + (FVector::UpVector * Force * GetUpStrengthRatio());
 	DoLaunch(Velocity);
 
 	// Skill = yeni ChainID başlatıcı (06 §2 kural 1). Tag omurgasına yayınla;
@@ -48,7 +54,7 @@ void AChaosCharacter::Server_ApplyKnockback_Implementation(AChaosCharacter* Targ
 		return;
 	}
 	const FVector Dir = (Target->GetActorLocation() - GetActorLocation()).GetSafeNormal();
-	const FVector Velocity = (Dir * Force) + (FVector::UpVector * Force * UpStrengthRatio);
+	const FVector Velocity = (Dir * Force) + (FVector::UpVector * Force * GetUpStrengthRatio());
 	Target->DoLaunch(Velocity);
 }
 
@@ -99,7 +105,7 @@ void AChaosCharacter::SetStaggeredInternal(bool bNewStaggered)
 		}
 
 		GetWorldTimerManager().SetTimer(StaggerTimerHandle, this,
-			&AChaosCharacter::RecoverFromStagger, Remaining + StaggerDuration, false);
+			&AChaosCharacter::RecoverFromStagger, Remaining + GetStaggerDuration(), false);
 	}
 	else
 	{
@@ -142,7 +148,7 @@ void AChaosCharacter::OnCapsuleHit(UPrimitiveComponent* HitComp, AActor* OtherAc
 
 	// Bizden ötekine doğru fırlat (Server_ApplyKnockback ile aynı mantık).
 	const FVector Dir = (Other->GetActorLocation() - GetActorLocation()).GetSafeNormal();
-	const FVector Velocity = (Dir * TransferForce) + (FVector::UpVector * TransferForce * UpStrengthRatio);
+	const FVector Velocity = (Dir * GetTransferForce()) + (FVector::UpVector * GetTransferForce() * GetUpStrengthRatio());
 	Other->DoLaunch(Velocity);
 
 	// İstemsiz çarpışma = zinciri yay (06 §2 kural 2). Tag omurgasına yayınla;

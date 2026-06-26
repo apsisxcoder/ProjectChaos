@@ -48,19 +48,16 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Chaos")
 	bool IsStaggered() const { return bStaggered; }
 
-	//~ TUNING (BP'de ayarlanır) =============================================
+	//~ TUNING (Data Asset — config, mantık değil) ===========================
 
-	/** Yatay kuvvete oranla eklenecek yukarı bileşen (0.5 = yarısı kadar yukarı). */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chaos|Tuning")
-	float UpStrengthRatio = 0.5f;
+	/** Karakterin fizik/stagger config'i. Boşsa C++ varsayılanlara düşer (fallback). */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Chaos|Tuning")
+	TObjectPtr<class UChaosCharacterTuning> Tuning;
 
-	/** Sersem karakter başka birine çarpınca ona uygulanan kuvvet. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chaos|Tuning")
-	float TransferForce = 1000.f;
-
-	/** Stagger süresi (sn); sonunda otomatik recovery. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chaos|Tuning")
-	float StaggerDuration = 1.8f;
+	// Fallback'li okuyucular (Tuning atanmamışsa standart varsayılan döner).
+	float GetUpStrengthRatio() const;
+	float GetTransferForce() const;
+	float GetStaggerDuration() const;
 
 protected:
 	/** RAGDOLL GÖRSELİNİ BURADA, BP'DE KUR. Her client'ta + host'ta çağrılır.
