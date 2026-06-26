@@ -33,7 +33,8 @@ struct FChaosChain
 	TObjectPtr<APlayerState> Owner = nullptr;   // zinciri açan (skill sahibi)
 	TSet<TObjectPtr<APlayerState>> ActiveStaggered; // bu zincire ait HÂLÂ sersem olanlar
 	TArray<FChainLink> Links;                   // üretilen halkalar
-	int32 LinkCount = 0;                         // player-hit sayısı (eskalasyon, 5.3)
+	int32 LinkCount = 0;                         // player-hit sayısı (eskalasyon)
+	int32 AccumulatedPoints = 0;                 // birikmiş ham puan (kapanışta × tier)
 	float StartTime = 0.f;
 };
 
@@ -82,6 +83,14 @@ private:
 	void RemovePlayerFromCurrentChain(APlayerState* Player);
 
 	void CloseChain(int32 ChainID);
+
+	//~ Puanlama (fallback'li; Tuning atanmazsa standart varsayılan) -----------
+	int32 ScorePlayerHit(int32 LinkCount) const;  // 06 §4: Base + StaggerGiven + Escalation×LinkCount
+	float TierBonus(int32 LinkCount) const;        // 06 §5
+
+	/** Skor sayıları (tier, puan). Boşsa fallback. BP_ChaosGameState'te atanır. */
+	UPROPERTY(EditDefaultsOnly, Category = "Chaos")
+	TObjectPtr<class UChaosScoringTuning> Tuning;
 
 	UPROPERTY()
 	TMap<int32, FChaosChain> ActiveChains;

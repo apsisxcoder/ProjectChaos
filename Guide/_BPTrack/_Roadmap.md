@@ -20,7 +20,9 @@
 - [x] **5.2** Impact linkleme + victim re-tag (Event.Impact.PlayerHit → OnImpact, LinkCount++)
        → ✅ kanıtlandı: relay (A→B→C aynı ID), bowling (A→B, A→C), re-tag (skill ile zincir değiştirme),
          eşzamanlı zincirler. LinkCount doğru artıyor. (2026-06-25)
-- [ ] **5.3** Scoring (puan + tier + hero çarpanı) + PlayerScore replicate
+- [x] **5.3** Scoring (puan + tier + PlayerState replike, sayılar DA_ChaosTuning'de, fallback'li)
+       → ✅ eskalasyon doğru (13→16→19), skor Owner'a yazılıyor, HUD'da birikerek artıyor
+         (29→42). Test HUD: WBP score binding. (2026-06-25) bkz. [07_Scoring.md](07_Scoring.md)
 - [ ] **5.4** Combo cue / popup (BP görsel: "COMBO! / MEGA CHAOS")
 
 ## Prototip eşlemesi (mevcut C++ → ChainID olayları)

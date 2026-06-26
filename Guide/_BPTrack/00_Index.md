@@ -19,6 +19,7 @@
 | 04 | [04_GameState_Kurulumu.md](04_GameState_Kurulumu.md) | BP GameMode → GameState Class = AChaosGameState | 🔶 BP'de set edilecek |
 | 05 | [05_Tag_Event_Omurgasi.md](05_Tag_Event_Omurgasi.md) | GameplayMessageRouter (Lyra) taşındı; tag-event decoupling | ✅ |
 | 06 | [06_Tuning_DataAsset.md](06_Tuning_DataAsset.md) | Karakter tuning → UChaosCharacterTuning Data Asset (fallback'li) | ✅ DA_DefaultCharacter çalışıyor |
+| 07 | [07_Scoring.md](07_Scoring.md) | Puanlama: AChaosPlayerState (replike) + DA_ChaosTuning (tier/puan) | 🔶 PlayerState Class ata + test |
 | — | [_BrainMap.md](_BrainMap.md) | Claude'un sistem zihin haritası (C++ ↔ BP ↔ tasarım) | canlı |
 | — | [_TODO.md](_TODO.md) | Gelecekteki iyileştirmeler / ertelenen işler (movement kapama, tuning, recovery yumuşatma) | canlı |
 

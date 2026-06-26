@@ -4,10 +4,33 @@
 
 #include "ChaosEventMessage.h"
 #include "ChaosGameplayTags.h"
+#include "ChaosPlayerState.h"
+#include "ChaosScoringTuning.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
 #include "GameFramework/PlayerState.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogChaosChain, Log, All);
+
+// Puanlama: Tuning varsa ondan, yoksa standart varsayılan (06 §4-5 değerleri).
+int32 UChaosChainComponent::ScorePlayerHit(int32 LinkCount) const
+{
+	const int32 Base       = Tuning ? Tuning->PlayerHitBase      : 5;
+	const int32 Stagger    = Tuning ? Tuning->StaggerGivenPoints : 5;
+	const int32 Escalation = Tuning ? Tuning->EscalationPerLink  : 3;
+	return Base + Stagger + (Escalation * LinkCount);
+}
+
+float UChaosChainComponent::TierBonus(int32 LinkCount) const
+{
+	if (Tuning)
+	{
+		return Tuning->GetTierBonus(LinkCount);
+	}
+	// Fallback (DA varsayılanlarıyla aynı): 4+ →3.0, 3 →1.5, 2 →1.0
+	if (LinkCount >= 4) return 3.0f;
+	if (LinkCount >= 3) return 1.5f;
+	return 1.0f;
+}
 
 UChaosChainComponent::UChaosChainComponent()
 {
@@ -119,15 +142,19 @@ void UChaosChainComponent::OnImpact(APlayerState* Instigator, APlayerState* Vict
 	PlayerCurrentChain.Add(Victim, ChainID);
 	Chain->LinkCount++;
 
+	// Puan birikimi (06 §4): eskalasyonlu PlayerHit puanı.
+	const int32 Points = ScorePlayerHit(Chain->LinkCount);
+	Chain->AccumulatedPoints += Points;
+
 	FChainLink Link;
 	Link.Instigator = Instigator;
 	Link.Victim = Victim;
 	Link.Timestamp = GetWorld() ? GetWorld()->GetTimeSeconds() : 0.f;
 	Chain->Links.Add(Link);
 
-	UE_LOG(LogChaosChain, Log, TEXT("[CHAIN] LINK   ID=%d  %s -> %s  LinkCount=%d  (sersem: %d)"),
+	UE_LOG(LogChaosChain, Log, TEXT("[CHAIN] LINK   ID=%d  %s -> %s  LinkCount=%d  +%d puan (ham: %d)"),
 		ChainID, *Instigator->GetPlayerName(), *Victim->GetPlayerName(),
-		Chain->LinkCount, Chain->ActiveStaggered.Num());
+		Chain->LinkCount, Points, Chain->AccumulatedPoints);
 }
 
 void UChaosChainComponent::OnStaggerRecovered(APlayerState* Player)
@@ -172,9 +199,21 @@ void UChaosChainComponent::CloseChain(int32 ChainID)
 		return;
 	}
 
-	// 5.1: puan YOK. Sadece kapanışı logla. (Puan 5.3'te Owner'a yazılır.)
-	UE_LOG(LogChaosChain, Log, TEXT("[CHAIN] KAPANDI ID=%d  Owner=%s  (aktif zincir: %d)"),
-		ChainID, Chain->Owner ? *Chain->Owner->GetPlayerName() : TEXT("?"), ActiveChains.Num() - 1);
+	// Final skor (06 §3-6): ham birikim × tier bonus × hero çarpan (şimdilik 1.0).
+	const float HeroMultiplier = 1.0f; // TODO: DA_HeroProfile.ComboMultiplier
+	const float Bonus = TierBonus(Chain->LinkCount);
+	const int32 Final = FMath::RoundToInt(Chain->AccumulatedPoints * Bonus * HeroMultiplier);
+	const FText TierLabel = Tuning ? Tuning->GetTierLabel(Chain->LinkCount) : FText::GetEmpty();
+
+	// Owner'ın PlayerState'ine yaz (replike → herkes görür).
+	if (AChaosPlayerState* PS = Cast<AChaosPlayerState>(Chain->Owner))
+	{
+		PS->AddChaosScore(Final);
+	}
+
+	UE_LOG(LogChaosChain, Log, TEXT("[CHAIN] KAPANDI ID=%d  Owner=%s  %s  ham=%d ×%.1f = %d puan  (aktif zincir: %d)"),
+		ChainID, Chain->Owner ? *Chain->Owner->GetPlayerName() : TEXT("?"),
+		*TierLabel.ToString(), Chain->AccumulatedPoints, Bonus, Final, ActiveChains.Num() - 1);
 
 	ActiveChains.Remove(ChainID);
 }
